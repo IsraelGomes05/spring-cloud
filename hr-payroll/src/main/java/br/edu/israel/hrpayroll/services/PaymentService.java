@@ -1,12 +1,28 @@
 package br.edu.israel.hrpayroll.services;
 
 import br.edu.israel.hrpayroll.entities.Payment;
+import br.edu.israel.hrpayroll.entities.Worker;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class PaymentService {
 
+    @Value("${hr-worker.host}")
+    private String workerHost;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     public Payment getPayment(long workerId, int days) {
-        return new Payment("Bob", 200.0, days);
+        Map<String, String> uriVariable = new HashMap<>();
+        uriVariable.put("id", ""+workerId);
+        Worker worker = restTemplate.getForEntity(workerHost + "/workers/{id}", Worker.class, uriVariable).getBody();
+        return new Payment(worker.getName(), worker.getDailyIncome(), days);
     }
 }
